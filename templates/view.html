@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.product_name }} - 物販管理ツール{% endblock %}
+
+{% block content %}
+<div class="view-container">
+    <div class="view-header">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">← 一覧に戻る</a>
+        <div class="view-actions">
+            <a href="{{ url_for('edit_item', id=item.id) }}" class="btn btn-primary">✎ 編集</a>
+            <form action="{{ url_for('delete_item', id=item.id) }}" method="post" class="delete-form" onsubmit="return confirm('この商品を削除しますか？');">
+                <button type="submit" class="btn btn-danger">✕ 削除</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="view-content">
+        <!-- 写真 -->
+        <div class="view-photo">
+            {% if item.photo_path %}
+                <img src="{{ url_for('static', filename=item.photo_path.replace('static/', '')) }}" alt="{{ item.product_name }}">
+            {% else %}
+                <div class="no-photo-large">◇<br>写真なし</div>
+            {% endif %}
+        </div>
+        
+        <!-- 基本情報 -->
+        <div class="view-info">
+            <div class="view-badges">
+                <span class="badge badge-id">No.{{ item.id }}</span>
+                {% if item.is_listed %}
+                    <span class="badge badge-listed">出品済</span>
+                {% endif %}
+                {% if item.sold_date %}
+                    <span class="badge badge-sold">売却済</span>
+                {% endif %}
+                {% if item.is_shipped %}
+                    <span class="badge badge-shipped">発送済</span>
+                {% endif %}
+            </div>
+            
+            <h1 class="view-title">{{ item.product_name }}</h1>
+            
+            <!-- 仕入れ情報 -->
+            <div class="info-section">
+                <h3 class="info-section-title">◆ 仕入れ情報</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">仕入れ日</span>
+                        <span class="info-value">{{ item.purchase_date or '---' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">店舗名</span>
+                        <span class="info-value">{{ item.store_name or '---' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">仕入れ額</span>
+                        <span class="info-value price">¥{{ "{:,.0f}".format(item.purchase_price or 0) }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">支払い方法</span>
+                        <span class="info-value">{{ item.payment_method or '---' }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 販売情報 -->
+            <div class="info-section">
+                <h3 class="info-section-title">◇ 販売情報</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">出品日</span>
+                        <span class="info-value">{{ item.listing_date or '---' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">売却日</span>
+                        <span class="info-value">{{ item.sold_date or '---' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">販売先</span>
+                        <span class="info-value">{{ item.sales_platform or '---' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">売上金</span>
+                        <span class="info-value price">¥{{ "{:,.0f}".format(item.sale_price or 0) }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">送料</span>
+                        <span class="info-value">¥{{ "{:,.0f}".format(item.shipping_cost or 0) }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">手数料</span>
+                        <span class="info-value">¥{{ "{:,.0f}".format(item.commission or 0) }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 利益情報 -->
+            {% set profit = calculate_profit(item) %}
+            {% set profit_rate = calculate_profit_rate(item) %}
+            <div class="info-section profit-section-view">
+                <h3 class="info-section-title">★ 利益情報</h3>
+                <div class="profit-display-view">
+                    <div class="profit-box {% if profit >= 0 %}profit-positive{% else %}profit-negative{% endif %}">
+                        <span class="profit-label-view">利益</span>
+                        <span class="profit-value-view">¥{{ "{:,.0f}".format(profit) }}</span>
+                    </div>
+                    <div class="profit-box {% if profit >= 0 %}profit-positive{% else %}profit-negative{% endif %}">
+                        <span class="profit-label-view">利益率</span>
+                        <span class="profit-value-view">{{ "{:.1f}".format(profit_rate) }}%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- メモ -->
+            {% if item.memo %}
+            <div class="info-section">
+                <h3 class="info-section-title">◈ メモ</h3>
+                <p class="memo-text">{{ item.memo }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

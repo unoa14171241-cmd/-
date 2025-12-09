@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}商品一覧 - 物販管理ツール{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <!-- 統計カード -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-icon">◈</span>
+            <div class="stat-info">
+                <span class="stat-label">総商品数</span>
+                <span class="stat-value">{{ stats.total }}</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">◇</span>
+            <div class="stat-info">
+                <span class="stat-label">出品中</span>
+                <span class="stat-value">{{ stats.listed }}</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">◆</span>
+            <div class="stat-info">
+                <span class="stat-label">売却済</span>
+                <span class="stat-value">{{ stats.sold }}</span>
+            </div>
+        </div>
+        <div class="stat-card stat-card-profit">
+            <span class="stat-icon">★</span>
+            <div class="stat-info">
+                <span class="stat-label">総利益</span>
+                <span class="stat-value">¥{{ "{:,.0f}".format(stats.total_profit) }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 検索・フィルター -->
+    <div class="filter-section">
+        <form action="{{ url_for('index') }}" method="get" class="search-form">
+            <input type="text" name="search" value="{{ search }}" placeholder="商品名・店舗名で検索..." class="search-input">
+            <button type="submit" class="btn btn-search">検索</button>
+        </form>
+        
+        <div class="filter-buttons">
+            <a href="{{ url_for('index', filter='all') }}" class="filter-btn {% if filter_type == 'all' %}active{% endif %}">全て</a>
+            <a href="{{ url_for('index', filter='today') }}" class="filter-btn {% if filter_type == 'today' %}active{% endif %}">今日</a>
+            <a href="{{ url_for('index', filter='yesterday') }}" class="filter-btn {% if filter_type == 'yesterday' %}active{% endif %}">昨日</a>
+            <a href="{{ url_for('index', filter='this_week') }}" class="filter-btn {% if filter_type == 'this_week' %}active{% endif %}">今週</a>
+            <a href="{{ url_for('index', filter='this_month') }}" class="filter-btn {% if filter_type == 'this_month' %}active{% endif %}">今月</a>
+            <a href="{{ url_for('index', filter='not_listed') }}" class="filter-btn {% if filter_type == 'not_listed' %}active{% endif %}">未出品</a>
+            <a href="{{ url_for('index', filter='listed') }}" class="filter-btn {% if filter_type == 'listed' %}active{% endif %}">出品中</a>
+            <a href="{{ url_for('index', filter='sold') }}" class="filter-btn {% if filter_type == 'sold' %}active{% endif %}">売却済</a>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('add_item') }}" class="btn btn-primary">+ 商品登録</a>
+            <a href="{{ url_for('export_csv') }}" class="btn btn-gold">📊 CSV出力</a>
+        </div>
+    </div>
+    
+    <!-- 商品リスト -->
+    <div class="items-list">
+        {% if items %}
+            {% for item in items %}
+                <div class="item-card" onclick="location.href='{{ url_for('view_item', id=item.id) }}'">
+                    <div class="item-photo">
+                        {% if item.photo_path %}
+                            <img src="{{ url_for('static', filename=item.photo_path.replace('static/', '')) }}" alt="{{ item.product_name }}">
+                        {% else %}
+                            <div class="no-photo">◇</div>
+                        {% endif %}
+                    </div>
+                    <div class="item-info">
+                        <div class="item-header">
+                            <span class="item-id">No.{{ item.id }}</span>
+                            <div class="item-badges">
+                                {% if item.is_listed %}
+                                    <span class="badge badge-listed">出品済</span>
+                                {% endif %}
+                                {% if item.sold_date %}
+                                    <span class="badge badge-sold">売却済</span>
+                                {% endif %}
+                                {% if item.is_shipped %}
+                                    <span class="badge badge-shipped">発送済</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <h3 class="item-name">{{ item.product_name }}</h3>
+                        <p class="item-store">{{ item.store_name or '---' }}</p>
+                        <div class="item-prices">
+                            <div class="price-row">
+                                <span class="price-label">仕入</span>
+                                <span class="price-value">¥{{ "{:,.0f}".format(item.purchase_price or 0) }}</span>
+                            </div>
+                            {% if item.sale_price %}
+                            <div class="price-row">
+                                <span class="price-label">売上</span>
+                                <span class="price-value">¥{{ "{:,.0f}".format(item.sale_price) }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% set profit = calculate_profit(item) %}
+                        {% if item.sold_date %}
+                        <div class="item-profit {% if profit >= 0 %}profit-positive{% else %}profit-negative{% endif %}">
+                            利益: ¥{{ "{:,.0f}".format(profit) }}
+                            ({{ "{:.1f}".format(calculate_profit_rate(item)) }}%)
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <span class="empty-icon">📦</span>
+                <p>商品がありません</p>
+                <a href="{{ url_for('add_item') }}" class="btn btn-primary">最初の商品を登録</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

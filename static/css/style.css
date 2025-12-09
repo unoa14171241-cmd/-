@@ -1,0 +1,949 @@
+/* ====================================
+   物販管理ツール - Web版 CSS
+   高級感のあるホワイト＆ゴールドテーマ
+   ==================================== */
+
+/* カスタムプロパティ（CSS変数） */
+:root {
+    --color-primary: #1e3a5f;
+    --color-primary-light: #2d4a6f;
+    --color-accent: #b8860b;
+    --color-accent-light: #daa520;
+    --color-success: #059669;
+    --color-danger: #dc2626;
+    --color-warning: #d97706;
+    
+    --color-bg: #fafafa;
+    --color-bg-card: #ffffff;
+    --color-bg-input: #ffffff;
+    --color-border: #e5e7eb;
+    
+    --color-text: #1a1a1a;
+    --color-text-secondary: #6b7280;
+    --color-text-light: #94a3b8;
+    
+    --font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --radius: 8px;
+    --radius-lg: 12px;
+}
+
+/* リセット＆ベース */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ====================================
+   ヘッダー
+   ==================================== */
+.header {
+    background: var(--color-primary);
+    color: #fff;
+    padding: 0 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-lg);
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-accent);
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.logo-icon {
+    font-size: 1.5rem;
+}
+
+.nav {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.nav-link {
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.nav-link:hover {
+    background: var(--color-primary-light);
+}
+
+.nav-link-primary {
+    background: var(--color-accent);
+    font-weight: 600;
+}
+
+.nav-link-primary:hover {
+    background: var(--color-accent-light);
+}
+
+/* ====================================
+   メインコンテンツ
+   ==================================== */
+.main {
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    width: 100%;
+}
+
+/* アラート */
+.alert {
+    padding: 1rem;
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.alert-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0.6;
+}
+
+/* ====================================
+   ダッシュボード
+   ==================================== */
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* 統計カード */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.stat-card {
+    background: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--color-border);
+}
+
+.stat-icon {
+    font-size: 1.5rem;
+    color: var(--color-primary);
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.stat-card-profit .stat-value {
+    color: var(--color-accent);
+}
+
+/* フィルターセクション */
+.filter-section {
+    background: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.search-form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    background: var(--color-bg);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    transition: all 0.2s;
+}
+
+.filter-btn:hover, .filter-btn.active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* ボタン */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-light);
+}
+
+.btn-gold {
+    background: var(--color-accent);
+    color: #fff;
+}
+
+.btn-gold:hover {
+    background: var(--color-accent-light);
+}
+
+.btn-secondary {
+    background: var(--color-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+    background: var(--color-border);
+}
+
+.btn-danger {
+    background: var(--color-danger);
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #ef4444;
+}
+
+.btn-search {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.btn-lg {
+    padding: 0.9rem 2rem;
+    font-size: 1rem;
+}
+
+/* ====================================
+   商品リスト
+   ==================================== */
+.items-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+}
+
+.item-card {
+    background: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+}
+
+.item-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.item-photo {
+    width: 120px;
+    height: 120px;
+    flex-shrink: 0;
+    background: var(--color-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.item-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.no-photo {
+    font-size: 2rem;
+    color: var(--color-text-light);
+}
+
+.item-info {
+    flex: 1;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.25rem;
+}
+
+.item-id {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
+.item-badges {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.badge {
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.badge-id {
+    background: var(--color-bg);
+    color: var(--color-text-secondary);
+}
+
+.badge-listed {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badge-sold {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.badge-shipped {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.item-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item-store {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.item-prices {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+}
+
+.price-row {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.price-label {
+    color: var(--color-text-secondary);
+}
+
+.price-value {
+    font-weight: 600;
+}
+
+.item-profit {
+    margin-top: auto;
+    padding-top: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.profit-positive {
+    color: var(--color-success);
+}
+
+.profit-negative {
+    color: var(--color-danger);
+}
+
+/* 空状態 */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--color-text-secondary);
+    grid-column: 1 / -1;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+/* ====================================
+   フォーム
+   ==================================== */
+.form-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.form-header h1 {
+    font-size: 1.5rem;
+    color: var(--color-primary);
+}
+
+.item-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-section {
+    background: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--color-border);
+}
+
+.section-title {
+    font-size: 1rem;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-accent);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-secondary);
+}
+
+.required {
+    color: var(--color-danger);
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-family: inherit;
+    background: var(--color-bg-input);
+    transition: border-color 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.form-input-file {
+    padding: 0.5rem;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.current-photo {
+    margin-bottom: 0.5rem;
+}
+
+.current-photo img {
+    max-width: 150px;
+    border-radius: var(--radius);
+}
+
+.form-group-checkbox {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.checkbox-label input {
+    width: 1.2rem;
+    height: 1.2rem;
+    accent-color: var(--color-accent);
+}
+
+.checkbox-text {
+    font-size: 0.95rem;
+    color: var(--color-text);
+}
+
+/* 利益表示 */
+.profit-section {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    color: #fff;
+}
+
+.profit-section .section-title {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+.profit-display {
+    display: flex;
+    gap: 2rem;
+}
+
+.profit-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.profit-label {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.profit-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-accent);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* ====================================
+   詳細表示
+   ==================================== */
+.view-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.view-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.delete-form {
+    display: inline;
+}
+
+.view-content {
+    background: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--color-border);
+}
+
+.view-photo {
+    width: 100%;
+    max-height: 400px;
+    background: var(--color-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-photo img {
+    width: 100%;
+    height: 100%;
+    max-height: 400px;
+    object-fit: contain;
+}
+
+.no-photo-large {
+    font-size: 3rem;
+    color: var(--color-text-light);
+    padding: 3rem;
+    text-align: center;
+}
+
+.view-info {
+    padding: 1.5rem;
+}
+
+.view-badges {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.view-title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-primary);
+}
+
+.info-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.info-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.info-section-title {
+    font-size: 0.95rem;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+}
+
+.info-value {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.info-value.price {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.profit-section-view {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    padding: 1.25rem;
+    border-radius: var(--radius);
+    margin-bottom: 1.5rem;
+}
+
+.profit-section-view .info-section-title {
+    color: var(--color-accent);
+}
+
+.profit-display-view {
+    display: flex;
+    gap: 2rem;
+}
+
+.profit-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.profit-label-view {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.profit-value-view {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-accent);
+}
+
+.profit-box.profit-negative .profit-value-view {
+    color: #f87171;
+}
+
+.memo-text {
+    background: var(--color-bg);
+    padding: 1rem;
+    border-radius: var(--radius);
+    white-space: pre-wrap;
+}
+
+/* ====================================
+   フッター
+   ==================================== */
+.footer {
+    background: var(--color-primary);
+    color: var(--color-text-light);
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.85rem;
+    margin-top: auto;
+}
+
+/* ====================================
+   レスポンシブ対応
+   ==================================== */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-value {
+        font-size: 1.25rem;
+    }
+    
+    .items-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .item-card {
+        flex-direction: row;
+    }
+    
+    .item-photo {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .profit-display, .profit-display-view {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-lg {
+        width: 100%;
+    }
+    
+    .view-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .view-actions {
+        width: 100%;
+    }
+    
+    .view-actions .btn {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-content {
+        height: 56px;
+    }
+    
+    .logo-text {
+        display: none;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+    
+    .stat-card {
+        padding: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    .stat-icon {
+        font-size: 1.25rem;
+    }
+    
+    .stat-value {
+        font-size: 1.1rem;
+    }
+    
+    .filter-buttons {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 0.5rem;
+    }
+    
+    .filter-btn {
+        flex-shrink: 0;
+    }
+    
+    .action-buttons {
+        width: 100%;
+    }
+    
+    .action-buttons .btn {
+        flex: 1;
+    }
+}
+
