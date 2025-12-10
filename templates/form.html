@@ -67,6 +67,14 @@
         <div class="form-section">
             <h2 class="section-title">◇ 出品・販売情報</h2>
             
+            <div class="form-group">
+                <label for="customer_id">購入者（顧客）</label>
+                <select id="customer_id" name="customer_id" class="form-input">
+                    <option value="">顧客を選択（任意）</option>
+                </select>
+                <small style="color: var(--color-text-secondary);">顧客を紐付けると購入実績に反映されます</small>
+            </div>
+            
             <div class="form-row">
                 <div class="form-group form-group-checkbox">
                     <label class="checkbox-label">
@@ -192,6 +200,26 @@
     
     // 初期計算
     calculateProfit();
+    
+    // 顧客リスト読み込み
+    fetch('/api/customers')
+        .then(response => response.json())
+        .then(customers => {
+            const select = document.getElementById('customer_id');
+            const currentCustomerId = '{{ item.customer_id if item and item.customer_id else "" }}';
+            
+            customers.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = customer.name;
+                if (customer.id == currentCustomerId) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        })
+        .catch(err => console.log('顧客リスト取得エラー:', err));
 </script>
 {% endblock %}
+
 

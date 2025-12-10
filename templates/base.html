@@ -20,7 +20,8 @@
                 <span class="logo-text">物販管理ツール</span>
             </a>
             <nav class="nav">
-                <a href="{{ url_for('index') }}" class="nav-link">一覧</a>
+                <a href="{{ url_for('index') }}" class="nav-link">商品</a>
+                <a href="{{ url_for('customers_list') }}" class="nav-link">👥 顧客</a>
                 <a href="{{ url_for('add_item') }}" class="nav-link nav-link-primary">+ 登録</a>
             </nav>
         </div>
@@ -54,4 +55,5 @@
     {% block scripts %}{% endblock %}
 </body>
 </html>
+
 

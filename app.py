@@ -36,6 +36,7 @@ def get_db():
 def init_db():
     """データベース初期化"""
     conn = get_db()
+    # 商品テーブル
     conn.execute('''
         CREATE TABLE IF NOT EXISTS merchandise (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,12 +55,81 @@ def init_db():
             commission REAL DEFAULT 0,
             is_shipped INTEGER DEFAULT 0,
             memo TEXT,
+            customer_id INTEGER,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    # 顧客テーブル
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS customers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT,
+            phone TEXT,
+            address TEXT,
+            memo TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     conn.commit()
     conn.close()
+
+
+# ランク設定（購入金額の閾値）
+RANK_THRESHOLDS = {
+    'platinum': 100000,  # プラチナ: 10万円以上
+    'gold': 50000,       # ゴールド: 5万円以上
+    'silver': 10000,     # シルバー: 1万円以上
+    'bronze': 0          # ブロンズ: 0円以上
+}
+
+RANK_COLORS = {
+    'platinum': '#E5E4E2',
+    'gold': '#FFD700',
+    'silver': '#C0C0C0',
+    'bronze': '#CD7F32'
+}
+
+RANK_NAMES = {
+    'platinum': 'プラチナ',
+    'gold': 'ゴールド',
+    'silver': 'シルバー',
+    'bronze': 'ブロンズ'
+}
+
+
+def get_customer_rank(total_purchase):
+    """購入金額からランクを判定"""
+    if total_purchase >= RANK_THRESHOLDS['platinum']:
+        return 'platinum'
+    elif total_purchase >= RANK_THRESHOLDS['gold']:
+        return 'gold'
+    elif total_purchase >= RANK_THRESHOLDS['silver']:
+        return 'silver'
+    else:
+        return 'bronze'
+
+
+def get_customer_stats(conn, customer_id):
+    """顧客の統計情報を取得"""
+    result = conn.execute('''
+        SELECT 
+            COUNT(*) as purchase_count,
+            COALESCE(SUM(sale_price), 0) as total_purchase
+        FROM merchandise 
+        WHERE customer_id = ? AND sold_date IS NOT NULL AND sold_date != ""
+    ''', (customer_id,)).fetchone()
+    
+    total_purchase = result['total_purchase'] or 0
+    return {
+        'purchase_count': result['purchase_count'] or 0,
+        'total_purchase': total_purchase,
+        'rank': get_customer_rank(total_purchase),
+        'rank_name': RANK_NAMES[get_customer_rank(total_purchase)],
+        'rank_color': RANK_COLORS[get_customer_rank(total_purchase)]
+    }
 
 
 def allowed_file(filename):
@@ -182,8 +252,8 @@ def add_item():
                 purchase_date, photo_path, product_name, store_name,
                 purchase_price, payment_method, is_listed, listing_date,
                 sold_date, sale_price, shipping_cost, sales_platform,
-                commission, is_shipped, memo
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                commission, is_shipped, memo, customer_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             request.form.get('purchase_date') or None,
             photo_path,
@@ -199,7 +269,8 @@ def add_item():
             request.form.get('sales_platform') or None,
             float(request.form.get('commission') or 0),
             1 if request.form.get('is_shipped') else 0,
-            request.form.get('memo') or None
+            request.form.get('memo') or None,
+            int(request.form.get('customer_id')) if request.form.get('customer_id') else None
         ))
         conn.commit()
         conn.close()
@@ -207,7 +278,10 @@ def add_item():
         flash('商品を登録しました', 'success')
         return redirect(url_for('index'))
     
-    return render_template('form.html', item=None, action='add')
+    conn = get_db()
+    customers = conn.execute('SELECT id, name FROM customers ORDER BY name').fetchall()
+    conn.close()
+    return render_template('form.html', item=None, action='add', customers=customers)
 
 
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
@@ -231,7 +305,7 @@ def edit_item(id):
                 purchase_date = ?, photo_path = ?, product_name = ?, store_name = ?,
                 purchase_price = ?, payment_method = ?, is_listed = ?, listing_date = ?,
                 sold_date = ?, sale_price = ?, shipping_cost = ?, sales_platform = ?,
-                commission = ?, is_shipped = ?, memo = ?, updated_at = CURRENT_TIMESTAMP
+                commission = ?, is_shipped = ?, memo = ?, customer_id = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         ''', (
             request.form.get('purchase_date') or None,
@@ -249,6 +323,7 @@ def edit_item(id):
             float(request.form.get('commission') or 0),
             1 if request.form.get('is_shipped') else 0,
             request.form.get('memo') or None,
+            int(request.form.get('customer_id')) if request.form.get('customer_id') else None,
             id
         ))
         conn.commit()
@@ -367,7 +442,178 @@ def api_stats():
     return jsonify(stats)
 
 
+# ============================================
+# 顧客管理
+# ============================================
+
+@app.route('/customers')
+def customers_list():
+    """顧客一覧"""
+    conn = get_db()
+    
+    # フィルター
+    rank_filter = request.args.get('rank', 'all')
+    search = request.args.get('search', '')
+    
+    customers = conn.execute('SELECT * FROM customers ORDER BY id DESC').fetchall()
+    
+    # 顧客に統計情報を追加
+    customers_with_stats = []
+    for customer in customers:
+        stats = get_customer_stats(conn, customer['id'])
+        customer_dict = dict(customer)
+        customer_dict.update(stats)
+        
+        # フィルター適用
+        if rank_filter != 'all' and stats['rank'] != rank_filter:
+            continue
+        if search and search.lower() not in customer['name'].lower():
+            continue
+            
+        customers_with_stats.append(customer_dict)
+    
+    # ランク別集計
+    rank_counts = {'platinum': 0, 'gold': 0, 'silver': 0, 'bronze': 0}
+    for c in customers_with_stats:
+        rank_counts[c['rank']] += 1
+    
+    conn.close()
+    
+    return render_template('customers.html',
+                          customers=customers_with_stats,
+                          rank_filter=rank_filter,
+                          search=search,
+                          rank_counts=rank_counts,
+                          rank_names=RANK_NAMES,
+                          rank_colors=RANK_COLORS,
+                          rank_thresholds=RANK_THRESHOLDS)
+
+
+@app.route('/customers/add', methods=['GET', 'POST'])
+def add_customer():
+    """顧客追加"""
+    if request.method == 'POST':
+        conn = get_db()
+        conn.execute('''
+            INSERT INTO customers (name, email, phone, address, memo)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (
+            request.form.get('name'),
+            request.form.get('email') or None,
+            request.form.get('phone') or None,
+            request.form.get('address') or None,
+            request.form.get('memo') or None
+        ))
+        conn.commit()
+        conn.close()
+        
+        flash('顧客を登録しました', 'success')
+        return redirect(url_for('customers_list'))
+    
+    return render_template('customer_form.html', customer=None, action='add')
+
+
+@app.route('/customers/edit/<int:id>', methods=['GET', 'POST'])
+def edit_customer(id):
+    """顧客編集"""
+    conn = get_db()
+    
+    if request.method == 'POST':
+        conn.execute('''
+            UPDATE customers SET
+                name = ?, email = ?, phone = ?, address = ?, memo = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        ''', (
+            request.form.get('name'),
+            request.form.get('email') or None,
+            request.form.get('phone') or None,
+            request.form.get('address') or None,
+            request.form.get('memo') or None,
+            id
+        ))
+        conn.commit()
+        conn.close()
+        
+        flash('顧客情報を更新しました', 'success')
+        return redirect(url_for('customers_list'))
+    
+    customer = conn.execute('SELECT * FROM customers WHERE id = ?', (id,)).fetchone()
+    conn.close()
+    
+    if not customer:
+        flash('顧客が見つかりません', 'error')
+        return redirect(url_for('customers_list'))
+    
+    return render_template('customer_form.html', customer=customer, action='edit')
+
+
+@app.route('/customers/view/<int:id>')
+def view_customer(id):
+    """顧客詳細"""
+    conn = get_db()
+    customer = conn.execute('SELECT * FROM customers WHERE id = ?', (id,)).fetchone()
+    
+    if not customer:
+        flash('顧客が見つかりません', 'error')
+        return redirect(url_for('customers_list'))
+    
+    # 顧客の購入履歴
+    purchases = conn.execute('''
+        SELECT * FROM merchandise 
+        WHERE customer_id = ? AND sold_date IS NOT NULL AND sold_date != ""
+        ORDER BY sold_date DESC
+    ''', (id,)).fetchall()
+    
+    # 統計情報
+    stats = get_customer_stats(conn, id)
+    
+    # 次のランクまでの金額
+    current_rank = stats['rank']
+    next_rank_info = None
+    if current_rank == 'bronze':
+        next_rank_info = {'rank': 'シルバー', 'needed': RANK_THRESHOLDS['silver'] - stats['total_purchase']}
+    elif current_rank == 'silver':
+        next_rank_info = {'rank': 'ゴールド', 'needed': RANK_THRESHOLDS['gold'] - stats['total_purchase']}
+    elif current_rank == 'gold':
+        next_rank_info = {'rank': 'プラチナ', 'needed': RANK_THRESHOLDS['platinum'] - stats['total_purchase']}
+    
+    conn.close()
+    
+    return render_template('customer_view.html',
+                          customer=customer,
+                          purchases=purchases,
+                          stats=stats,
+                          next_rank_info=next_rank_info,
+                          rank_thresholds=RANK_THRESHOLDS,
+                          calculate_profit=calculate_profit)
+
+
+@app.route('/customers/delete/<int:id>', methods=['POST'])
+def delete_customer(id):
+    """顧客削除"""
+    conn = get_db()
+    # 関連する商品の顧客IDをクリア
+    conn.execute('UPDATE merchandise SET customer_id = NULL WHERE customer_id = ?', (id,))
+    conn.execute('DELETE FROM customers WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    
+    flash('顧客を削除しました', 'success')
+    return redirect(url_for('customers_list'))
+
+
+@app.route('/api/customers')
+def api_customers():
+    """顧客一覧API（商品登録時の選択用）"""
+    conn = get_db()
+    customers = conn.execute('SELECT id, name FROM customers ORDER BY name').fetchall()
+    conn.close()
+    return jsonify([{'id': c['id'], 'name': c['name']} for c in customers])
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 

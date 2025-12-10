@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}顧客管理 - 物販管理ツール{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <!-- ランク別カード -->
+    <div class="rank-cards">
+        <div class="rank-card rank-platinum" onclick="location.href='{{ url_for('customers_list', rank='platinum') }}'">
+            <span class="rank-icon">💎</span>
+            <div class="rank-info">
+                <span class="rank-label">プラチナ</span>
+                <span class="rank-count">{{ rank_counts.platinum }}人</span>
+            </div>
+            <span class="rank-threshold">¥{{ "{:,}".format(rank_thresholds.platinum) }}〜</span>
+        </div>
+        <div class="rank-card rank-gold" onclick="location.href='{{ url_for('customers_list', rank='gold') }}'">
+            <span class="rank-icon">🥇</span>
+            <div class="rank-info">
+                <span class="rank-label">ゴールド</span>
+                <span class="rank-count">{{ rank_counts.gold }}人</span>
+            </div>
+            <span class="rank-threshold">¥{{ "{:,}".format(rank_thresholds.gold) }}〜</span>
+        </div>
+        <div class="rank-card rank-silver" onclick="location.href='{{ url_for('customers_list', rank='silver') }}'">
+            <span class="rank-icon">🥈</span>
+            <div class="rank-info">
+                <span class="rank-label">シルバー</span>
+                <span class="rank-count">{{ rank_counts.silver }}人</span>
+            </div>
+            <span class="rank-threshold">¥{{ "{:,}".format(rank_thresholds.silver) }}〜</span>
+        </div>
+        <div class="rank-card rank-bronze" onclick="location.href='{{ url_for('customers_list', rank='bronze') }}'">
+            <span class="rank-icon">🥉</span>
+            <div class="rank-info">
+                <span class="rank-label">ブロンズ</span>
+                <span class="rank-count">{{ rank_counts.bronze }}人</span>
+            </div>
+            <span class="rank-threshold">¥0〜</span>
+        </div>
+    </div>
+    
+    <!-- フィルター -->
+    <div class="filter-section">
+        <form action="{{ url_for('customers_list') }}" method="get" class="search-form">
+            <input type="text" name="search" value="{{ search }}" placeholder="顧客名で検索..." class="search-input">
+            <button type="submit" class="btn btn-search">検索</button>
+        </form>
+        
+        <div class="filter-buttons">
+            <a href="{{ url_for('customers_list', rank='all') }}" class="filter-btn {% if rank_filter == 'all' %}active{% endif %}">全て</a>
+            <a href="{{ url_for('customers_list', rank='platinum') }}" class="filter-btn {% if rank_filter == 'platinum' %}active{% endif %}">💎 プラチナ</a>
+            <a href="{{ url_for('customers_list', rank='gold') }}" class="filter-btn {% if rank_filter == 'gold' %}active{% endif %}">🥇 ゴールド</a>
+            <a href="{{ url_for('customers_list', rank='silver') }}" class="filter-btn {% if rank_filter == 'silver' %}active{% endif %}">🥈 シルバー</a>
+            <a href="{{ url_for('customers_list', rank='bronze') }}" class="filter-btn {% if rank_filter == 'bronze' %}active{% endif %}">🥉 ブロンズ</a>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('add_customer') }}" class="btn btn-primary">+ 顧客登録</a>
+        </div>
+    </div>
+    
+    <!-- 顧客リスト -->
+    <div class="customers-list">
+        {% if customers %}
+            {% for customer in customers %}
+                <div class="customer-card" onclick="location.href='{{ url_for('view_customer', id=customer.id) }}'">
+                    <div class="customer-rank-badge rank-{{ customer.rank }}">
+                        {% if customer.rank == 'platinum' %}💎
+                        {% elif customer.rank == 'gold' %}🥇
+                        {% elif customer.rank == 'silver' %}🥈
+                        {% else %}🥉{% endif %}
+                        {{ customer.rank_name }}
+                    </div>
+                    <div class="customer-info">
+                        <h3 class="customer-name">{{ customer.name }}</h3>
+                        <div class="customer-contact">
+                            {% if customer.email %}<span>📧 {{ customer.email }}</span>{% endif %}
+                            {% if customer.phone %}<span>📱 {{ customer.phone }}</span>{% endif %}
+                        </div>
+                        <div class="customer-stats">
+                            <span class="stat">購入回数: <strong>{{ customer.purchase_count }}回</strong></span>
+                            <span class="stat">累計購入: <strong>¥{{ "{:,.0f}".format(customer.total_purchase) }}</strong></span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <span class="empty-icon">👥</span>
+                <p>顧客がいません</p>
+                <a href="{{ url_for('add_customer') }}" class="btn btn-primary">最初の顧客を登録</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

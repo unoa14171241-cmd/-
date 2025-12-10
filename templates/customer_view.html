@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}{{ customer.name }} - 顧客詳細{% endblock %}
+
+{% block content %}
+<div class="view-container">
+    <div class="view-header">
+        <a href="{{ url_for('customers_list') }}" class="btn btn-secondary">← 顧客一覧</a>
+        <div class="view-actions">
+            <a href="{{ url_for('edit_customer', id=customer.id) }}" class="btn btn-primary">✎ 編集</a>
+            <form action="{{ url_for('delete_customer', id=customer.id) }}" method="post" class="delete-form" onsubmit="return confirm('この顧客を削除しますか？');">
+                <button type="submit" class="btn btn-danger">✕ 削除</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="customer-detail">
+        <!-- ランクカード -->
+        <div class="rank-display rank-{{ stats.rank }}">
+            <div class="rank-icon-large">
+                {% if stats.rank == 'platinum' %}💎
+                {% elif stats.rank == 'gold' %}🥇
+                {% elif stats.rank == 'silver' %}🥈
+                {% else %}🥉{% endif %}
+            </div>
+            <div class="rank-text">
+                <span class="rank-label-large">{{ stats.rank_name }}</span>
+                <span class="rank-member">会員</span>
+            </div>
+        </div>
+        
+        <!-- 顧客情報 -->
+        <div class="view-content">
+            <h1 class="customer-name-large">{{ customer.name }}</h1>
+            
+            <div class="info-section">
+                <h3 class="info-section-title">📊 購入実績</h3>
+                <div class="stats-display">
+                    <div class="stat-box">
+                        <span class="stat-number">{{ stats.purchase_count }}</span>
+                        <span class="stat-label">購入回数</span>
+                    </div>
+                    <div class="stat-box stat-box-highlight">
+                        <span class="stat-number">¥{{ "{:,.0f}".format(stats.total_purchase) }}</span>
+                        <span class="stat-label">累計購入金額</span>
+                    </div>
+                </div>
+                
+                {% if next_rank_info %}
+                <div class="next-rank-info">
+                    <p>🎯 <strong>{{ next_rank_info.rank }}</strong>まであと <strong>¥{{ "{:,.0f}".format(next_rank_info.needed) }}</strong></p>
+                    <div class="progress-bar">
+                        {% if stats.rank == 'bronze' %}
+                            {% set progress = (stats.total_purchase / rank_thresholds.silver) * 100 %}
+                        {% elif stats.rank == 'silver' %}
+                            {% set progress = ((stats.total_purchase - rank_thresholds.silver) / (rank_thresholds.gold - rank_thresholds.silver)) * 100 %}
+                        {% elif stats.rank == 'gold' %}
+                            {% set progress = ((stats.total_purchase - rank_thresholds.gold) / (rank_thresholds.platinum - rank_thresholds.gold)) * 100 %}
+                        {% else %}
+                            {% set progress = 100 %}
+                        {% endif %}
+                        <div class="progress-fill" style="width: {{ progress }}%"></div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="max-rank-info">
+                    <p>🎉 最高ランクに到達しています！</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="info-section">
+                <h3 class="info-section-title">📇 連絡先</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">メール</span>
+                        <span class="info-value">{{ customer.email or '---' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">電話番号</span>
+                        <span class="info-value">{{ customer.phone or '---' }}</span>
+                    </div>
+                    <div class="info-item" style="grid-column: 1 / -1;">
+                        <span class="info-label">住所</span>
+                        <span class="info-value">{{ customer.address or '---' }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            {% if customer.memo %}
+            <div class="info-section">
+                <h3 class="info-section-title">📝 メモ</h3>
+                <p class="memo-text">{{ customer.memo }}</p>
+            </div>
+            {% endif %}
+            
+            <!-- 購入履歴 -->
+            <div class="info-section">
+                <h3 class="info-section-title">🛒 購入履歴</h3>
+                {% if purchases %}
+                <div class="purchase-history">
+                    {% for item in purchases %}
+                    <div class="purchase-item">
+                        <div class="purchase-date">{{ item.sold_date }}</div>
+                        <div class="purchase-name">{{ item.product_name }}</div>
+                        <div class="purchase-price">¥{{ "{:,.0f}".format(item.sale_price) }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="no-data">購入履歴がありません</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

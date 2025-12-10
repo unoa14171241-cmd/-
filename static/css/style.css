@@ -947,3 +947,362 @@ img {
     }
 }
 
+/* ====================================
+   顧客管理
+   ==================================== */
+
+/* ランクカード */
+.rank-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.rank-card {
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.rank-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+.rank-platinum {
+    background: linear-gradient(135deg, #E5E4E2 0%, #B8B8B8 100%);
+    color: #1a1a1a;
+}
+
+.rank-gold {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #1a1a1a;
+}
+
+.rank-silver {
+    background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
+    color: #1a1a1a;
+}
+
+.rank-bronze {
+    background: linear-gradient(135deg, #CD7F32 0%, #B8860B 100%);
+    color: #fff;
+}
+
+.rank-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.rank-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.rank-label {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.rank-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.rank-threshold {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    margin-top: 0.25rem;
+}
+
+/* 顧客リスト */
+.customers-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1rem;
+}
+
+.customer-card {
+    background: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.customer-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.customer-rank-badge {
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.customer-rank-badge.rank-platinum {
+    background: linear-gradient(135deg, #E5E4E2, #B8B8B8);
+    color: #1a1a1a;
+}
+
+.customer-rank-badge.rank-gold {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #1a1a1a;
+}
+
+.customer-rank-badge.rank-silver {
+    background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
+    color: #1a1a1a;
+}
+
+.customer-rank-badge.rank-bronze {
+    background: linear-gradient(135deg, #CD7F32, #B8860B);
+    color: #fff;
+}
+
+.customer-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.customer-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
+}
+
+.customer-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.customer-stats {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.customer-stats .stat {
+    color: var(--color-text-secondary);
+}
+
+.customer-stats strong {
+    color: var(--color-text);
+}
+
+/* 顧客詳細 */
+.customer-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.rank-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    text-align: center;
+}
+
+.rank-icon-large {
+    font-size: 4rem;
+}
+
+.rank-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.rank-label-large {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.rank-member {
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+.customer-name-large {
+    font-size: 1.75rem;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.stats-display {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.stat-box {
+    background: var(--color-bg);
+    padding: 1.25rem 2rem;
+    border-radius: var(--radius);
+    text-align: center;
+}
+
+.stat-box-highlight {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.stat-box-highlight .stat-number {
+    color: var(--color-accent);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.next-rank-info {
+    background: var(--color-bg);
+    padding: 1rem;
+    border-radius: var(--radius);
+    text-align: center;
+}
+
+.progress-bar {
+    height: 8px;
+    background: var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0.75rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light));
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
+.max-rank-info {
+    background: linear-gradient(135deg, #E5E4E2, #B8B8B8);
+    padding: 1rem;
+    border-radius: var(--radius);
+    text-align: center;
+    font-weight: 600;
+}
+
+.purchase-history {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.purchase-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--color-bg);
+    border-radius: var(--radius);
+    gap: 1rem;
+}
+
+.purchase-date {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    width: 100px;
+}
+
+.purchase-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.purchase-price {
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.no-data {
+    text-align: center;
+    color: var(--color-text-secondary);
+    padding: 2rem;
+}
+
+/* レスポンシブ - 顧客管理 */
+@media (max-width: 768px) {
+    .rank-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .customers-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .customer-card {
+        flex-direction: column;
+    }
+    
+    .stats-display {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .stat-box {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .rank-cards {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+    
+    .rank-card {
+        padding: 0.75rem;
+    }
+    
+    .rank-icon {
+        font-size: 1.5rem;
+    }
+    
+    .rank-count {
+        font-size: 1.25rem;
+    }
+    
+    .rank-icon-large {
+        font-size: 3rem;
+    }
+    
+    .rank-label-large {
+        font-size: 1.5rem;
+    }
+}
+
+
