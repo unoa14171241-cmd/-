@@ -115,6 +115,7 @@ def init_db():
                 purchase_date TEXT, photo_path TEXT, product_name TEXT NOT NULL,
                 store_name TEXT, purchase_price REAL DEFAULT 0, payment_method TEXT,
                 is_listed INTEGER DEFAULT 0, listing_date TEXT, sold_date TEXT,
+                listing_price REAL DEFAULT 0, expected_shipping REAL DEFAULT 0, expected_commission REAL DEFAULT 0,
                 sale_price REAL DEFAULT 0, shipping_cost REAL DEFAULT 0,
                 sales_platform TEXT, commission REAL DEFAULT 0, is_shipped INTEGER DEFAULT 0,
                 memo TEXT, customer_id INTEGER,
@@ -122,6 +123,14 @@ def init_db():
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        # 既存テーブルにカラムがなければ追加
+        try:
+            cur.execute('ALTER TABLE merchandise ADD COLUMN IF NOT EXISTS listing_price REAL DEFAULT 0')
+            cur.execute('ALTER TABLE merchandise ADD COLUMN IF NOT EXISTS expected_shipping REAL DEFAULT 0')
+            cur.execute('ALTER TABLE merchandise ADD COLUMN IF NOT EXISTS expected_commission REAL DEFAULT 0')
+            conn.commit()
+        except:
+            pass
         cur.execute('''
             CREATE TABLE IF NOT EXISTS customers (
                 id SERIAL PRIMARY KEY,
@@ -139,6 +148,7 @@ def init_db():
                 purchase_date TEXT, photo_path TEXT, product_name TEXT NOT NULL,
                 store_name TEXT, purchase_price REAL DEFAULT 0, payment_method TEXT,
                 is_listed INTEGER DEFAULT 0, listing_date TEXT, sold_date TEXT,
+                listing_price REAL DEFAULT 0, expected_shipping REAL DEFAULT 0, expected_commission REAL DEFAULT 0,
                 sale_price REAL DEFAULT 0, shipping_cost REAL DEFAULT 0,
                 sales_platform TEXT, commission REAL DEFAULT 0, is_shipped INTEGER DEFAULT 0,
                 memo TEXT, customer_id INTEGER,
@@ -197,6 +207,22 @@ def calculate_profit_rate(item):
     return (profit / purchase * 100) if purchase > 0 else 0
 
 
+def calculate_expected_profit(item):
+    """想定利益を計算（出品価格ベース）"""
+    listing_price = item.get('listing_price') or 0
+    purchase_price = item.get('purchase_price') or 0
+    expected_shipping = item.get('expected_shipping') or 0
+    expected_commission = item.get('expected_commission') or 0
+    return listing_price - purchase_price - expected_shipping - expected_commission
+
+
+def calculate_expected_profit_rate(item):
+    """想定利益率を計算"""
+    profit = calculate_expected_profit(item)
+    purchase = item.get('purchase_price') or 0
+    return (profit / purchase * 100) if purchase > 0 else 0
+
+
 with app.app_context():
     init_db()
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -251,7 +277,8 @@ def index():
     conn.close()
     
     return render_template('index.html', items=items, stats=stats, filter_type=filter_type,
-                          search=search, calculate_profit=calculate_profit, calculate_profit_rate=calculate_profit_rate)
+                          search=search, calculate_profit=calculate_profit, calculate_profit_rate=calculate_profit_rate,
+                          calculate_expected_profit=calculate_expected_profit, calculate_expected_profit_rate=calculate_expected_profit_rate)
 
 
 @app.route('/add', methods=['GET', 'POST'])
@@ -269,15 +296,20 @@ def add_item():
         conn = get_db()
         db_insert(conn, '''
             INSERT INTO merchandise (purchase_date, photo_path, product_name, store_name,
-                purchase_price, payment_method, is_listed, listing_date, sold_date, sale_price,
-                shipping_cost, sales_platform, commission, is_shipped, memo, customer_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                purchase_price, payment_method, is_listed, listing_date, sold_date,
+                listing_price, expected_shipping, expected_commission,
+                sale_price, shipping_cost, sales_platform, commission, is_shipped, memo, customer_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         ''', (
             request.form.get('purchase_date') or None, photo_path,
             request.form.get('product_name'), request.form.get('store_name') or None,
             float(request.form.get('purchase_price') or 0), request.form.get('payment_method') or None,
             1 if request.form.get('is_listed') else 0, request.form.get('listing_date') or None,
-            request.form.get('sold_date') or None, float(request.form.get('sale_price') or 0),
+            request.form.get('sold_date') or None,
+            float(request.form.get('listing_price') or 0),
+            float(request.form.get('expected_shipping') or 0),
+            float(request.form.get('expected_commission') or 0),
+            float(request.form.get('sale_price') or 0),
             float(request.form.get('shipping_cost') or 0), request.form.get('sales_platform') or None,
             float(request.form.get('commission') or 0), 1 if request.form.get('is_shipped') else 0,
             request.form.get('memo') or None,
@@ -306,6 +338,7 @@ def edit_item(id):
         db_execute(conn, '''
             UPDATE merchandise SET purchase_date=%s, photo_path=%s, product_name=%s, store_name=%s,
                 purchase_price=%s, payment_method=%s, is_listed=%s, listing_date=%s, sold_date=%s,
+                listing_price=%s, expected_shipping=%s, expected_commission=%s,
                 sale_price=%s, shipping_cost=%s, sales_platform=%s, commission=%s, is_shipped=%s,
                 memo=%s, customer_id=%s, updated_at=CURRENT_TIMESTAMP WHERE id=%s
         ''', (
@@ -313,7 +346,11 @@ def edit_item(id):
             request.form.get('product_name'), request.form.get('store_name') or None,
             float(request.form.get('purchase_price') or 0), request.form.get('payment_method') or None,
             1 if request.form.get('is_listed') else 0, request.form.get('listing_date') or None,
-            request.form.get('sold_date') or None, float(request.form.get('sale_price') or 0),
+            request.form.get('sold_date') or None,
+            float(request.form.get('listing_price') or 0),
+            float(request.form.get('expected_shipping') or 0),
+            float(request.form.get('expected_commission') or 0),
+            float(request.form.get('sale_price') or 0),
             float(request.form.get('shipping_cost') or 0), request.form.get('sales_platform') or None,
             float(request.form.get('commission') or 0), 1 if request.form.get('is_shipped') else 0,
             request.form.get('memo') or None,

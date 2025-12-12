@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}{{ '商品編集' if item else '商品登録' }} - 物販管理ツール{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>{{ '商品編集' if item else '商品登録' }}</h1>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">← 戻る</a>
+    </div>
+    
+    <form action="{{ url_for('edit_item', id=item.id) if item else url_for('add_item') }}" method="post" enctype="multipart/form-data" class="item-form">
+        
+        <!-- 仕入れ情報 -->
+        <div class="form-section">
+            <h2 class="section-title">◆ 仕入れ情報</h2>
+            
+            <div class="form-group">
+                <label for="purchase_date">仕入れ日付</label>
+                <input type="date" id="purchase_date" name="purchase_date" 
+                       value="{{ item.purchase_date if item else '' }}" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="photo">写真</label>
+                {% if item and item.photo_path %}
+                    <div class="current-photo">
+                        <img src="{{ url_for('static', filename=item.photo_path.replace('static/', '')) }}" alt="現在の写真">
+                        <input type="hidden" name="existing_photo" value="{{ item.photo_path }}">
+                    </div>
+                {% endif %}
+                <input type="file" id="photo" name="photo" accept="image/*" class="form-input-file">
+            </div>
+            
+            <div class="form-group">
+                <label for="product_name">商品名 <span class="required">*</span></label>
+                <input type="text" id="product_name" name="product_name" required
+                       value="{{ item.product_name if item else '' }}" class="form-input" placeholder="商品名を入力">
+            </div>
+            
+            <div class="form-group">
+                <label for="store_name">店舗名</label>
+                <input type="text" id="store_name" name="store_name"
+                       value="{{ item.store_name if item else '' }}" class="form-input" placeholder="仕入れ先店舗名">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="purchase_price">仕入れ額 (円)</label>
+                    <input type="number" id="purchase_price" name="purchase_price" min="0"
+                           value="{{ item.purchase_price|int if item else 0 }}" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="payment_method">支払い方法</label>
+                    <select id="payment_method" name="payment_method" class="form-input">
+                        <option value="">選択してください</option>
+                        {% for method in ['現金', 'クレジットカード', 'PayPay', '楽天ペイ', 'その他'] %}
+                            <option value="{{ method }}" {% if item and item.payment_method == method %}selected{% endif %}>{{ method }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 出品情報 -->
+        <div class="form-section">
+            <h2 class="section-title">◇ 出品情報</h2>
+            
+            <div class="form-row">
+                <div class="form-group form-group-checkbox">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="is_listed" {% if item and item.is_listed %}checked{% endif %}>
+                        <span class="checkbox-text">出品済み</span>
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label for="listing_date">出品日</label>
+                    <input type="date" id="listing_date" name="listing_date"
+                           value="{{ item.listing_date if item else '' }}" class="form-input">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="sales_platform">販売先</label>
+                    <select id="sales_platform" name="sales_platform" class="form-input">
+                        <option value="">選択してください</option>
+                        {% for platform in ['メルカリ', 'ヤフオク', 'ラクマ', 'PayPayフリマ', 'Amazon', '楽天', 'BASE', 'その他'] %}
+                            <option value="{{ platform }}" {% if item and item.sales_platform == platform %}selected{% endif %}>{{ platform }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="listing_price">出品価格 (円)</label>
+                    <input type="number" id="listing_price" name="listing_price" min="0"
+                           value="{{ item.listing_price|int if item and item.listing_price else 0 }}" class="form-input">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="expected_shipping">想定送料 (円)</label>
+                    <input type="number" id="expected_shipping" name="expected_shipping" min="0"
+                           value="{{ item.expected_shipping|int if item and item.expected_shipping else 0 }}" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="expected_commission">想定手数料 (円)</label>
+                    <input type="number" id="expected_commission" name="expected_commission" min="0"
+                           value="{{ item.expected_commission|int if item and item.expected_commission else 0 }}" class="form-input">
+                </div>
+            </div>
+        </div>
+        
+        <!-- 想定利益（自動計算） -->
+        <div class="form-section expected-profit-section" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b;">
+            <h2 class="section-title" style="color: #b45309;">★ 想定利益（自動計算）</h2>
+            <div class="profit-display">
+                <div class="profit-item">
+                    <span class="profit-label">想定利益</span>
+                    <span class="profit-value" id="expected-profit-value" style="color: #b45309;">¥0</span>
+                </div>
+                <div class="profit-item">
+                    <span class="profit-label">想定利益率</span>
+                    <span class="profit-value" id="expected-profit-rate" style="color: #b45309;">0%</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 売却情報 -->
+        <div class="form-section">
+            <h2 class="section-title">◆ 売却情報</h2>
+            
+            <div class="form-group">
+                <label for="customer_id">購入者（顧客）</label>
+                <select id="customer_id" name="customer_id" class="form-input">
+                    <option value="">顧客を選択（任意）</option>
+                </select>
+                <small style="color: var(--color-text-secondary);">顧客を紐付けると購入実績に反映されます</small>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="sold_date">売却日</label>
+                    <input type="date" id="sold_date" name="sold_date"
+                           value="{{ item.sold_date if item else '' }}" class="form-input">
+                </div>
+                
+                <div class="form-group form-group-checkbox">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="is_shipped" {% if item and item.is_shipped %}checked{% endif %}>
+                        <span class="checkbox-text">発送済み</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="sale_price">売上金（実際） (円)</label>
+                    <input type="number" id="sale_price" name="sale_price" min="0"
+                           value="{{ item.sale_price|int if item else 0 }}" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="shipping_cost">送料（実際） (円)</label>
+                    <input type="number" id="shipping_cost" name="shipping_cost" min="0"
+                           value="{{ item.shipping_cost|int if item else 0 }}" class="form-input">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="commission">手数料（実際） (円)</label>
+                <input type="number" id="commission" name="commission" min="0"
+                       value="{{ item.commission|int if item else 0 }}" class="form-input">
+            </div>
+        </div>
+        
+        <!-- 利益情報（自動計算） -->
+        <div class="form-section profit-section">
+            <h2 class="section-title">★ 利益情報（自動計算）</h2>
+            <div class="profit-display">
+                <div class="profit-item">
+                    <span class="profit-label">利益</span>
+                    <span class="profit-value" id="profit-value">¥0</span>
+                </div>
+                <div class="profit-item">
+                    <span class="profit-label">利益率</span>
+                    <span class="profit-value" id="profit-rate">0%</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- メモ -->
+        <div class="form-section">
+            <h2 class="section-title">◈ メモ</h2>
+            <div class="form-group">
+                <textarea id="memo" name="memo" rows="3" class="form-input form-textarea" placeholder="メモを入力...">{{ item.memo if item else '' }}</textarea>
+            </div>
+        </div>
+        
+        <!-- 送信ボタン -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">{{ '✦ 更新' if item else '✦ 登録' }}</button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary btn-lg">キャンセル</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 想定利益自動計算
+    function calculateExpectedProfit() {
+        const listingPrice = parseFloat(document.getElementById('listing_price').value) || 0;
+        const purchasePrice = parseFloat(document.getElementById('purchase_price').value) || 0;
+        const expectedShipping = parseFloat(document.getElementById('expected_shipping').value) || 0;
+        const expectedCommission = parseFloat(document.getElementById('expected_commission').value) || 0;
+        
+        const profit = listingPrice - purchasePrice - expectedShipping - expectedCommission;
+        const profitRate = purchasePrice > 0 ? (profit / purchasePrice) * 100 : 0;
+        
+        const profitEl = document.getElementById('expected-profit-value');
+        const rateEl = document.getElementById('expected-profit-rate');
+        
+        profitEl.textContent = '¥' + profit.toLocaleString();
+        rateEl.textContent = profitRate.toFixed(1) + '%';
+        
+        const color = profit >= 0 ? '#059669' : '#dc2626';
+        profitEl.style.color = color;
+        rateEl.style.color = color;
+    }
+    
+    // 実際の利益自動計算
+    function calculateProfit() {
+        const salePrice = parseFloat(document.getElementById('sale_price').value) || 0;
+        const purchasePrice = parseFloat(document.getElementById('purchase_price').value) || 0;
+        const shippingCost = parseFloat(document.getElementById('shipping_cost').value) || 0;
+        const commission = parseFloat(document.getElementById('commission').value) || 0;
+        
+        const profit = salePrice - purchasePrice - shippingCost - commission;
+        const profitRate = purchasePrice > 0 ? (profit / purchasePrice) * 100 : 0;
+        
+        const profitEl = document.getElementById('profit-value');
+        const rateEl = document.getElementById('profit-rate');
+        
+        profitEl.textContent = '¥' + profit.toLocaleString();
+        rateEl.textContent = profitRate.toFixed(1) + '%';
+        
+        const color = profit >= 0 ? '#059669' : '#dc2626';
+        profitEl.style.color = color;
+        rateEl.style.color = color;
+    }
+    
+    // イベントリスナー設定（想定利益）
+    ['listing_price', 'purchase_price', 'expected_shipping', 'expected_commission'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calculateExpectedProfit);
+    });
+    
+    // イベントリスナー設定（実際の利益）
+    ['sale_price', 'purchase_price', 'shipping_cost', 'commission'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calculateProfit);
+    });
+    
+    // 初期計算
+    calculateExpectedProfit();
+    calculateProfit();
+    
+    // 顧客リスト読み込み
+    fetch('/api/customers')
+        .then(response => response.json())
+        .then(customers => {
+            const select = document.getElementById('customer_id');
+            const currentCustomerId = '{{ item.customer_id if item and item.customer_id else "" }}';
+            
+            customers.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = customer.name;
+                if (customer.id == currentCustomerId) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        })
+        .catch(err => console.log('顧客リスト取得エラー:', err));
+</script>
+{% endblock %}
+
+
